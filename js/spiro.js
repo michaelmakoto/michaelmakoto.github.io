@@ -1,26 +1,32 @@
 let t,d,a;
 let c;
-
 let img;
 
+// store x,y,angle in here
+let inventoryX = [];
+let inventoryY = [];
+let inventoryAngle = [];
 let middleX, middleY;
 let setScale = 1;
 
+// graphic preferences
 let enableScale = true;
-let enableGrid = false;
+let enableGrid = true;
+let enableGridOverLap = true;
 let enableYFlip = true;
 
+//slider position
 let posX = 180;
 let s_length = '600px'
 
 function setup(){
-  c = createCanvas(900, 900);
+  c = createCanvas(720, 720);
   img = loadImage('assets/block.png');
   background(255);
   
   loop();
 
-  sliderTimes = createSlider(1, 500, 100);
+  sliderTimes = createSlider(2, 500, 100);
   sliderTimes.position(posX, 10);
   sliderTimes.style('width', s_length);
 
@@ -63,15 +69,16 @@ function spirograph(times, distance, angle)
 
   let newX, newY, newAngle;
 
-  let inventoryX = [0,distance];
-  let inventoryY = [0,0];
-  let inventoryAngle = [0,0];
-  
+  inventoryX = [0,distance];
+  inventoryY = [0,0];
+  inventoryAngle = [0,0];
+
+  // calcute all the cordinates
   for (let i=0; i<times-1; i++)
   {
     newAngle = angle + oldAngle;
-    newX = distance * cos(radians(newAngle))+ oldX; 
-    newY = distance * sin(radians(newAngle))+ oldY;
+    newX = distance * cos(radians(newAngle)) + oldX; 
+    newY = distance * sin(radians(newAngle)) + oldY;
     
     inventoryX.push(newX);
     inventoryY.push(newY);
@@ -89,8 +96,9 @@ function spirograph(times, distance, angle)
   let shapeHeight = max(inventoryY) - min(inventoryY);
   let shapeWidth = max(inventoryX) - min(inventoryX);
 
-  let aspectHeight = height/shapeHeight;
-  let aspectWidth = width/shapeWidth;
+  // compare length 
+  let ratioHeight = height/shapeHeight;
+  let ratioWidth = width/shapeWidth;
 
   // auto scale the shape
   if (enableScale == false)
@@ -99,8 +107,9 @@ function spirograph(times, distance, angle)
   } 
     else 
   {
-    setScale = (aspectWidth < aspectHeight) ? 
-               (aspectWidth * 0.95) : (aspectHeight * 0.95);
+    // rescale image
+    setScale = (ratioWidth < ratioHeight) ? 
+               (ratioWidth * 0.8) : (ratioHeight * 0.8);
   }
 
   adjustPosX = width/setScale/2-middleX;
@@ -125,21 +134,40 @@ function spirograph(times, distance, angle)
   } 
     else 
   {
+    // project x axis
     stroke('red');
     line(min(inventoryX),0,max(inventoryX),0);
-    stroke('blue');
-    line(0,min(inventoryY),0,max(inventoryY));
-    // line(0,min(inventoryY),0,max(inventoryY)+min(inventoryY)*0.8);
-    
-  }
+    scale(1,-1);
+    textSize(5);
+    text("x", max(inventoryX)*1.02, 1);
+    scale(1,-1);
 
+    // project y axis
+    if (enableGridOverLap == true)
+    {
+      stroke('blue');
+      line(0,min(inventoryY),0,max(inventoryY));
+      scale(1,-1);
+      text("y", 0, -max(inventoryY)-3);
+      scale(1,-1);
+      
+    } 
+      else 
+    {
+      stroke('blue');
+      // don't let the y-axis overlap the left top image
+      line(0,min(inventoryY),0,max(inventoryY)+min(inventoryY)*0.8);
+      scale(1,-1);
+      text("y", 0, -max(inventoryY)-min(inventoryY)*0.8);
+      scale(1,-1);
+    }
+  }
   // draw spirograph
   stroke('black');
   for(let i=1; i<times+1; i++)
   {
     line(inventoryX[i-1], inventoryY[i-1],inventoryX[i], inventoryY[i]);
   }
-  
 }
 
 function keyTyped() 
@@ -151,6 +179,13 @@ function keyTyped()
     console.log(enableGrid);
   }
 
+  if (key === 'o') 
+  {
+    enableGridOverLap = !enableGridOverLap;
+    console.log("pressed o");
+    console.log(enableGridOverLap);
+  }
+
   if (key === 'f') 
   {
     enableYFlip = !enableYFlip;
@@ -158,14 +193,14 @@ function keyTyped()
     console.log(enableYFlip);
   }
 
-  if (key === 'c') 
+  if (key === 's') 
   {
     enableScale = !enableScale;
-    console.log("pressed c");
+    console.log("pressed s");
     console.log(enableScale);
   }
 
-  if (key === 's') 
+  if (key === 'c') 
   {
     saveCanvas(c);
   }
