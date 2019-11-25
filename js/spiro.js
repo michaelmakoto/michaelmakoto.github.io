@@ -1,6 +1,7 @@
 let t,d,a;
 let c;
 let img;
+let table;
 
 // store x,y,angle in here
 let inventoryX = [];
@@ -14,17 +15,21 @@ let enableScale = true;
 let enableGrid = true;
 let enableGridOverLap = true;
 let enableYFlip = true;
+// read from csv;
+let enableCSV = false;
 
 //slider position
 let posX = 180;
-let s_length = '600px'
+let s_length = '400px'
+
+function preload(){
+  table = loadTable('assets/spiro.csv', 'csv', 'header');
+}
 
 function setup(){
   c = createCanvas(720, 720);
-  img = loadImage('assets/block.png');
+  // img = loadImage('assets/block.png');
   background(255);
-  
-  loop();
 
   sliderTimes = createSlider(2, 500, 100);
   sliderTimes.position(posX, 10);
@@ -41,25 +46,36 @@ function setup(){
 
 function draw()
 {
+  // read from table and genertate
   strokeWeight(1);
   rect(0, 0, width, height);
-  image(img,5,5,145,145);
+  // image(img,5,5,145,145);
   strokeWeight(0.5);
-  
-  t = sliderTimes.value();
-  d = sliderDistance.value();
-  a = sliderAngle.value();
+
+  if (enableCSV == false) {
+    t = sliderTimes.value();
+    d = sliderDistance.value();
+    a = sliderAngle.value();
+  } else {
+    // t,d,a values will be generted 
+    // function keyTyped() -> when r is pressed
+  }
 
   textSize(17);
-  textAlign(CENTER);
+  textAlign(LEFT);
   fill('gray');
-  text(t, 58, 31);
-  text(d, 70, 68);
-  text(a, 70, 106);
+  text("繰り返し:" + str(t), 15, 30);
+  text("動かす:" + str(d), 15, 50);
+  text("回す:" + str(a), 15, 70);
   fill(255);
 
-  spirograph(t,d,a); 
-}
+  spirograph(t,d,a);
+
+  if (enableCSV == true) 
+  {
+    saveCanvas(c);
+  }
+} 
 
 function spirograph(times, distance, angle)
 {
@@ -137,19 +153,19 @@ function spirograph(times, distance, angle)
     // project x axis
     stroke('red');
     line(min(inventoryX),0,max(inventoryX),0);
-    scale(1,-1);
-    textSize(5);
-    text("x", max(inventoryX)*1.02, 1);
-    scale(1,-1);
+    // scale(1,-1);
+    // textSize(5);
+    // text("x", max(inventoryX)*1.02, 1);
+    // scale(1,-1);
 
     // project y axis
     if (enableGridOverLap == true)
     {
       stroke('blue');
       line(0,min(inventoryY),0,max(inventoryY));
-      scale(1,-1);
-      text("y", 0, -max(inventoryY)-3);
-      scale(1,-1);
+      // scale(1,-1);
+      // text("y", 0, -max(inventoryY)-3);
+      // scale(1,-1);
       
     } 
       else 
@@ -157,9 +173,9 @@ function spirograph(times, distance, angle)
       stroke('blue');
       // don't let the y-axis overlap the left top image
       line(0,min(inventoryY),0,max(inventoryY)+min(inventoryY)*0.8);
-      scale(1,-1);
-      text("y", 0, -max(inventoryY)-min(inventoryY)*0.8);
-      scale(1,-1);
+      // scale(1,-1);
+      // text("y", 0, -max(inventoryY)-min(inventoryY)*0.8);
+      // scale(1,-1);
     }
   }
   // draw spirograph
@@ -203,5 +219,31 @@ function keyTyped()
   if (key === 'c') 
   {
     saveCanvas(c);
+  }
+
+  if (key === 'r') 
+  {
+    enableCSV = !enableCSV;
+    console.log("pressed r");
+    console.log(enableCSV);
+
+    for (let r = 0; r < table.getRowCount(); r++) 
+    {
+      try 
+      {
+        t = table.getNum(r,0);
+        b = table.getNum(r,1);
+        a = table.getNum(r,2);
+        redraw(); 
+        print(t,b,a);
+      } 
+        catch (error) 
+      {
+        print('problem with row ' + str(r+2) + ' on csv');
+      }
+    }
+    enableCSV = false;
+    console.log("done");
+    console.log(enableCSV);
   }
 }
